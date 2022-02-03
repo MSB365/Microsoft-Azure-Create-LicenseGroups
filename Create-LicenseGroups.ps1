@@ -1,3 +1,4 @@
+cls
 #region - Description
 <#     
        .NOTES
@@ -19,7 +20,6 @@
        All variables that are required are queried by the script.
        This script creates the following elements:
             - On-premise groups for Intune administration and licence assignment
-
             
        
        .NOTES
@@ -33,7 +33,6 @@
         The executing account needs following permissions on-premise:
             - Create Active Directory groups
             - Create Active Directory Organizational Units
-
         
         The executing account needs following permissions in AzureAD:
             - Create groups
@@ -52,7 +51,6 @@
        ===========================================================================
        .CHANGE LOG
              V0.10, 2022/01/31 - DrPe - Initial version
-
 			 
 --- keep it simple, but significant ---
 --- by MSB365 Blog ---
@@ -120,6 +118,7 @@ Start-Sleep -s 3
 #region - Function
 #################################################
 # Function
+#check for module function
 #check for module function
 Function CheckModule($modulename){
     #Check if module is already imported
@@ -202,12 +201,41 @@ function Write-Log
     }
 	
 }
+
+#region create Log file for logging
+$mdmdirectory = "C:\MDM\"
+If ((Test-Path -Path $mdmdirectory) -eq $false)
+{
+    try{
+        New-Item -Path $mdmdirectory -ItemType directory -ErrorAction Stop
+    }catch{
+        throw "Could not create folder ""$mdmdirectory"" for logs. " + $_
+        Return
+    }
+        
+}
+$timestamp = get-date -Format yyyy-MM-dd_HHmmss
+$Log = “C:\MDM\CreateGlobalSecurityGroups_” + $timestamp + “.log”
+$ErrorActionPreference=”SilentlyContinue”
+
+Start-Sleep -s 1
+#endregion
+
+#region Create on-prem account and groups
+
+#Check if module ActiveDirectory is installed
+$admodule = CheckModule ActiveDirectory
+if ($admodule -ne 0){
+    Write-Log -type ERROR -Message "Script execution aborted"
+    return
+}
 #endregion
 
 #region - Variables
 #################################################
 # Set variables
 $GroupOUpath1 = $(Write-Host "Enter the OU Path where the Licensing Groups should be created. Example: " -NoNewLine) + $(Write-Host """" -NoNewline)  + $(Write-Host "OU=Licenses,OU=Groups,OU=MSB01,DC=contoso,DC=local" -ForegroundColor Yellow -NoNewline; Read-Host """")
+#$GroupOUpath1 = "OU=ITP_Test,OU=MDM,DC=msb365,DC=online"
 Start-Sleep -s 3
 write-host "Variable set!" -ForegroundColor Green
 Start-Sleep -s 3
@@ -403,8 +431,9 @@ write-host "Connectig to the Microsoft 365 License Service Module" -ForegroundCo
 Start-Sleep -s 3
 $aadlicmodule = CheckModule AzureADLicensing
 if ($aadlicmodule -ne 0){
-    Write-Log -type ERROR -Message "Script execution aborted"
-    return
+    Write-Host "AzureADLicensing Module Not Installed. Installing........." -ForegroundColor Red
+        Install-Module -Name AzureADLicensing -AllowClobber -Force
+    Write-Host "AzureADLicensing Module Installed" -ForegroundColor Green
 }
 
 
