@@ -183,7 +183,7 @@ else
        Created by:         Drago Petrovic
        Organization:       MSB365.blog
        Filename:           Create-LicenseGroups.ps1
-       Current version:    V0.10     
+       Current version:    V1.00     
        Find us on:
              * Website:         https://www.msb365.blog
              * Technet:         https://social.technet.microsoft.com/Profile/MSB365
@@ -226,10 +226,10 @@ else
        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
        ===========================================================================
        .CHANGE LOG
-             V0.10, 2022/01/31 - DrPe - Initial version
-			 V0.20,	2022/10/02 - DrPe - Group Names modified
-             V0.21, 2022/10/06 - DrPe - Bugfixing License assigning
-			 V1.00, 2022/10/07 - DrPe - Major Versioning, Module updates, array fixing
+        V0.10, 2022/01/31 - DrPe - Initial version
+	V0.20,	2022/10/02 - DrPe - Group Names modified
+        V0.21, 2022/10/06 - DrPe - Bugfixing License assigning
+	V1.00, 2022/10/07 - DrPe - Major Versioning, Module updates, array fixing
 			 
 --- keep it simple, but significant ---
 --- by MSB365 Blog ---
