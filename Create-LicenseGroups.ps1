@@ -227,6 +227,9 @@ else
        ===========================================================================
        .CHANGE LOG
              V0.10, 2022/01/31 - DrPe - Initial version
+			 V0.20,	2022/10/02 - DrPe - Group Names modified
+             V0.21, 2022/10/06 - DrPe - Bugfixing License assigning
+			 V1.00, 2022/10/07 - DrPe - Major Versioning, Module updates, array fixing
 			 
 --- keep it simple, but significant ---
 --- by MSB365 Blog ---
@@ -281,7 +284,7 @@ write-host ""
 write-host ""
 write-host ""
 write-host ""
-write-host "Script version V0.10 by Drago Petrovic" -ForegroundColor White -BackgroundColor Magenta
+write-host "Script version V1.00 by Drago Petrovic" -ForegroundColor White -BackgroundColor Magenta
 write-host ""
 write-host ""
 write-host ""
@@ -379,7 +382,7 @@ function Write-Log
 }
 
 #region create Log file for logging
-$mdmdirectory = "C:\MDM\"
+$mdmdirectory = "C:\MDM\Logfiles"
 If ((Test-Path -Path $mdmdirectory) -eq $false)
 {
     try{
@@ -583,16 +586,40 @@ Else
 write-host "Connectig Azure Active Directory" -ForegroundColor Magenta -NoNewline
 write-host " - Please enter the credentials..." -ForegroundColor Yellow 
 Start-Sleep -s 5
-if (Get-Module -ListAvailable -Name AzureADPreview) {
-    Write-Host "AzureADPreview Module Already Installed" -ForegroundColor Green
+if (Get-Module -ListAvailable -Name AzureAD) {
+    Write-Host "AzureAD Module Already Installed" -ForegroundColor Green
 } 
 else {
-    Write-Host "AzureADPreview Module Not Installed. Installing........." -ForegroundColor Red
-        Install-Module -Name AzureADPreview -AllowClobber -Force
-    Write-Host "AzureADPreview Module Installed" -ForegroundColor Green
+    Write-Host "AzureAD Module Not Installed. Installing........." -ForegroundColor Red
+        Install-Module -Name AzureAD -AllowClobber -Force
+    Write-Host "AzureAD Module Installed" -ForegroundColor Green
 }
-Import-Module AzureADPreview
+Import-Module AzureAD
 Connect-AzureAD
+Start-Sleep -s 2
+
+write-host "Connectig to the Microsoft 365 License Service Module" -ForegroundColor Magenta -NoNewline
+
+#endregion
+
+#region - Connect MsolService
+#################################################
+# Connect to Azure Active directory module
+
+#Load Azure Active Directory PowerShell Module
+write-host "Connectig MsolService" -ForegroundColor Magenta -NoNewline
+write-host " - Please enter the credentials..." -ForegroundColor Yellow 
+Start-Sleep -s 5
+if (Get-Module -ListAvailable -Name MsolService) {
+    Write-Host "MsolService Module Already Installed" -ForegroundColor Green
+} 
+else {
+    Write-Host "MsolService Module Not Installed. Installing........." -ForegroundColor Red
+        Install-Module -Name MsolService -AllowClobber -Force
+    Write-Host "MsolService Module Installed" -ForegroundColor Green
+}
+Import-Module MsolService
+Connect-MsolService
 Start-Sleep -s 2
 
 write-host "Connectig to the Microsoft 365 License Service Module" -ForegroundColor Magenta -NoNewline
@@ -640,7 +667,7 @@ $SKUs = Get-AADLicenseSku
 #create mapping table for licenses and groups
 $groupsAndLicenses = @{
 "_Licensing_AzAD_P1" = ($SKUs | where { $_.AccountSKuID -like "*:AAD_PREMIUM" }).AccountSkuID 
-"_Licensing_AzAD_P2" = ($SKUs | where { $_.AccountSKuID -like "*:AAD_PREMIUM_P2" }).AccountSkuID 
+"_LicensingAzAD_P2" = ($SKUs | where { $_.AccountSKuID -like "*:AAD_PREMIUM_P2" }).AccountSkuID 
 "_Licensing_EXO_P1" = ($SKUs | where { $_.AccountSKuID -like "*:EXCHANGESTANDARD" }).AccountSkuID 
 "_Licensing_EXO_Kiosk" = ($SKUs | where { $_.AccountSKuID -like "*:EXCHANGEDESKLESS" }).AccountSkuID 
 "_Licensing_M365_AppsForBusiness" = ($SKUs | where { $_.AccountSKuID -like "*:O365_BUSINESS" }).AccountSkuID 
@@ -661,7 +688,7 @@ $groupsAndLicenses = @{
 "_Licensing_M365_BusinessPremium_Base" = ($SKUs | where { $_.AccountSKuID -like "*:SPB" }).AccountSkuID 
 "_Licensing_M365_BusinessBasic_Base" = ($SKUs | where { $_.AccountSKuID -like "*:O365_BUSINESS_ESSENTIALS" }).AccountSkuID 
 "_Licensing_M365_BusinessStd_Base" = ($SKUs | where { $_.AccountSKuID -like "*:O365_BUSINESS_PREMIUM" }).AccountSkuID 
-"_Licensing_MSDefOffice_P2" = = ($SKUs | where { $_.AccountSKuID -like "*:THREAT_INTELLIGENCE" }).AccountSkuID 
+"_Licensing_MSDefOffice_P2" = ($SKUs | where { $_.AccountSKuID -like "*:THREAT_INTELLIGENCE" }).AccountSkuID 
 "_Licensing_MSDefEndpoint_P2" = ($SKUs | where { $_.AccountSKuID -like "*:" }).AccountSkuID
 "_Licensing_M365_E5_Base"  = ($SKUs | where { $_.AccountSKuID -like "*:SPE_E5" }).AccountSkuID 
 "_Licensing_PowerBI_Pro" = ($SKUs | where { $_.AccountSKuID -like "*:POWER_BI_PRO" }).AccountSkuID 
@@ -672,7 +699,7 @@ $groupsAndLicenses = @{
 "_Licensing_Win10Enterp_E3" = ($SKUs | where { $_.AccountSKuID -like "*:WIN10_PRO_ENT_SUB" }).AccountSkuID 
 "_Licensing_AzInfoProtect_P1" = ($SKUs | where { $_.AccountSKuID -like "*:RIGHTSMANAGEMENT" }).AccountSkuID 
 "_Licensing_Project_P5" = ($SKUs | where { $_.AccountSKuID -like "*:PROJECTPREMIUM_GOV" }).AccountSkuID 
-"_Licensing_MSDefOffice_P1" = = ($SKUs | where { $_.AccountSKuID -like "*:ATP_ENTERPRISE" }).AccountSkuID
+"_Licensing_MSDefOffice_P1" = ($SKUs | where { $_.AccountSKuID -like "*:ATP_ENTERPRISE" }).AccountSkuID
 }
 
 Write-Log -type INFO -Message 'Done getting licenses'
@@ -773,16 +800,16 @@ More information: https://docs.microsoft.com/en-us/azure/active-directory/enterp
                                                                                                                                     #
 Customer:                                                                                                                           #
 _Licensing_Teams_PhoneSystems                  reseller-account:MCOEV                                                               #
-_Licensing_M365_E3_Base                        reseller-account:SPE_E3                                                              #
-_Licensing_O365_E3_Base                        reseller-account:ENTERPRISEPACK                                                      #
-_Licensing_M365_E3_exclEXO                                                                                                          #
+_Licensing_InActive_M365_E3_Base                        reseller-account:SPE_E3                                                     #
+_Licensing_InActive_O365_E3_Base                        reseller-account:ENTERPRISEPACK                                             #
+_Licensing_InActive_M365_E3_exclEXO                                                                                                 #
 _Licensing_O365_E3_exclEXO                                                                                                          #
-_Licensing_EMS_E3_Base                         reseller-account:EMS                                                                 #
-_Licensing_EMS_E5_Base                         reseller-account:EMSPREMIUM                                                          #
-_Licensing_O365_E5_Base                        reseller-account:ENTERPRISEPREMIUM                                                   #
-_Licensing_M365_BP_Base                        reseller-account:SPB                                                                 #
+_Licensing_InActive_EMS_E3_Base                         reseller-account:EMS                                                        #
+_Licensing_InActive_EMS_E5_Base                         reseller-account:EMSPREMIUM                                                 #
+_Licensing_InActive_O365_E5_Base                        reseller-account:ENTERPRISEPREMIUM                                          #
+_Licensing_InActive_M365_BP_Base                        reseller-account:SPB                                                        #
 _Licensing_ATP_P1_Base                         reseller-account:ATP_ENTERPRISE                                                      #
-_Licensing_M365_E5_Base                        reseller-account:SPE_E5                                                              #
+_Licensing_InActive_M365_E5_Base                        reseller-account:SPE_E5                                                     #
 #>                                                                                                                                  #
 #####################################################################################################################################
 #endregion
